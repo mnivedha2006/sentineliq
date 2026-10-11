@@ -4,17 +4,17 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 
-from src.data_loader import load_metrics, load_events
-from src.detector import detect_anomalies_statistical, detect_anomalies_isolation_forest
-from src.investigator import correlate_events
-from src.impact import estimate_revenue_gap
-
-# Page Configuration
+# 1. MUST BE THE VERY FIRST STREAMLIT COMMAND
 st.set_page_config(
     page_title="SentinelIQ: Enterprise Operational Intelligence",
     page_layout="wide",
     initial_sidebar_state="expanded"
 )
+
+from src.data_loader import load_metrics, load_events
+from src.detector import detect_anomalies_statistical, detect_anomalies_isolation_forest
+from src.investigator import correlate_events
+from src.impact import estimate_revenue_gap
 
 # Custom Enterprise CSS Styling
 st.markdown("""
@@ -30,7 +30,7 @@ df_metrics = load_metrics()
 df_events = load_events()
 
 # Sidebar Executive Controls
-st.sidebar.title(" SentinelIQ Control Panel")
+st.sidebar.title("🛡️ SentinelIQ Control Panel")
 st.sidebar.markdown("---")
 metric_col = st.sidebar.selectbox("Target Metric Analysis", 
                                   ['conversion_rate', 'error_rate', 'avg_latency_ms', 'revenue', 'orders'])
@@ -112,18 +112,18 @@ with tab3:
 
 # ---------------- TAB 4: AI FORENSIC POST-MORTEM ----------------
 with tab4:
-    st.subheader(" Automated AI Forensic Post-Mortem Report")
+    st.subheader("🧠 Automated AI Forensic Post-Mortem Report")
     st.markdown("Generated based on live telemetry anomalies, rolling median deviations, and correlated deployment markers.")
     
     report_markdown = f"""
-    ###  Incident Investigation Report
+    ### 📋 Incident Investigation Report
     * **Generated At:** {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}
     * **Analyzed Metric:** `{metric_col}`
     * **Total Statistical Anomalies:** `{stat_count}`
     * **Estimated Financial Impact:** `${revenue_gap:,.2f}`
     
     ---
-    ####  Key Findings & Root Cause Analysis
+    #### 🔍 Key Findings & Root Cause Analysis
     1. **Deviation Spike:** Metric deviations crossed historical rolling median thresholds with a MAD sensitivity of `{threshold_val}`.
     2. **Operational Correlation:** Temporal proximity verified against recent system deployment alerts and database telemetry.
     3. **Actionable Recommendation:** Immediate review of deployment logs and rollback procedures during anomaly intervals is advised.
@@ -135,7 +135,7 @@ with tab4:
     
     # Downloadable Management Report Button
     st.download_button(
-        label=" Download Forensic Post-Mortem Report (Markdown)",
+        label="📥 Download Forensic Post-Mortem Report (Markdown)",
         data=report_markdown,
         file_name="sentineliq_forensic_report.md",
         mime="text/markdown"
