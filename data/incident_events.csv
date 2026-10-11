@@ -1,0 +1,4 @@
+event_time,event_type,affected_component,description,incident_id
+2026-01-09 08:00:00,deployment,checkout_service,Deplotment v1.2.4 with buggy payment handler,INC_A
+2026-01-21 20:00:00,service_alert,database,Database connection pool saturation warning,INC_B
+2026-02-03 08:00:00,campaign_launch,marketing_api,High spend campaign launched with broken tracking pixel,INC_C
