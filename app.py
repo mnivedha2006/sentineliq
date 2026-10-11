@@ -15,8 +15,8 @@ st.set_page_config(
 st.sidebar.title("Operational Control")
 st.sidebar.markdown("---")
 
-# --- METHOD 1 & METHOD 3 INTERFACE CONTROLS ---
-data_mode = st.sidebar.radio("Data Source Mode", ["Default Demo Data", "Method 1: Upload Custom CSV", "Method 3: Generate Custom Simulation"])
+# Clean professional labels instead of technical method numbers
+data_mode = st.sidebar.radio("Data Source Mode", ["Default Demo Data", "Upload Custom CSV", "Generate Custom Simulation"])
 
 @st.cache_data
 def load_data(mode, uploaded_file=None, sim_hours=1440, base_rev=12000, base_err=0.01):
@@ -29,7 +29,6 @@ def load_data(mode, uploaded_file=None, sim_hours=1440, base_rev=12000, base_err
             st.error(f"Error loading uploaded file: {e}")
             
     elif mode == "Generate Custom Simulation":
-        # Dynamic custom data generation directly from interface controls
         dates = pd.date_range(start="2026-01-01", periods=sim_hours, freq="H")
         df_m = pd.DataFrame({
             'timestamp': dates,
@@ -63,15 +62,14 @@ def load_data(mode, uploaded_file=None, sim_hours=1440, base_rev=12000, base_err
         
     return df_m, df_e
 
-# Handle dynamic controls based on selected mode
 uploaded_file = None
 sim_hours = 1440
 base_rev = 12000
 base_err = 0.01
 
-if data_mode == "Method 1: Upload Custom CSV":
+if data_mode == "Upload Custom CSV":
     uploaded_file = st.sidebar.file_uploader("Upload Telemetry CSV", type=["csv"])
-elif data_mode == "Method 3: Generate Custom Simulation":
+elif data_mode == "Generate Custom Simulation":
     st.sidebar.markdown("### Simulation Parameters")
     sim_hours = st.sidebar.slider("Hours to Simulate", 24, 2160, 1440)
     base_rev = st.sidebar.number_input("Baseline Target Revenue ($)", 5000, 100000, 12000)
