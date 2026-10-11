@@ -20,7 +20,7 @@ data_mode = st.sidebar.radio("Data Source Mode", ["Default Demo Data", "Method 1
 
 @st.cache_data
 def load_data(mode, uploaded_file=None, sim_hours=1440, base_rev=12000, base_err=0.01):
-    if mode == "Method 1: Upload Custom CSV" and uploaded_file is not None:
+    if mode == "Upload Custom CSV" and uploaded_file is not None:
         try:
             df_m = pd.read_csv(uploaded_file, parse_dates=['timestamp'])
             df_e = pd.DataFrame(columns=['timestamp', 'event_type', 'description'])
@@ -28,7 +28,7 @@ def load_data(mode, uploaded_file=None, sim_hours=1440, base_rev=12000, base_err
         except Exception as e:
             st.error(f"Error loading uploaded file: {e}")
             
-    elif mode == "Method 3: Generate Custom Simulation":
+    elif mode == "Generate Custom Simulation":
         # Dynamic custom data generation directly from interface controls
         dates = pd.date_range(start="2026-01-01", periods=sim_hours, freq="H")
         df_m = pd.DataFrame({
