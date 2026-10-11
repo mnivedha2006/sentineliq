@@ -5,10 +5,10 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 
-# 1. MUST BE THE VERY FIRST STREAMLIT COMMAND
+# Corrected parameter: layout instead of page_layout
 st.set_page_config(
     page_title="SentinelIQ: Enterprise Operational Intelligence",
-    page_layout="wide",
+    layout="wide",
     initial_sidebar_state="expanded"
 )
 
@@ -21,15 +21,13 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Inline Data Loaders to avoid external import side-effects
 @st.cache_data
 def load_metrics():
     try:
         return pd.read_csv("data/demo_metrics.csv", parse_dates=['timestamp'])
     except:
-        # Fallback inline generation if file missing
         dates = pd.date_range(start="2026-01-01", periods=1440, freq="H")
-        df = pd.DataFrame({
+        return pd.DataFrame({
             'timestamp': dates,
             'conversion_rate': np.random.normal(0.0035, 0.0005, 1440),
             'error_rate': np.random.normal(0.01, 0.002, 1440),
@@ -37,7 +35,6 @@ def load_metrics():
             'revenue': np.random.normal(12000, 1500, 1440),
             'orders': np.random.normal(450, 50, 1440)
         })
-        return df
 
 @st.cache_data
 def load_events():
@@ -49,7 +46,6 @@ def load_events():
 df_metrics = load_metrics()
 df_events = load_events()
 
-# Inline Statistical & ML Detectors
 def detect_anomalies_statistical(df, column, window=24, threshold=3.0):
     rolling_median = df[column].rolling(window=window, min_periods=1, center=True).median()
     diff = (df[column] - rolling_median).abs()
@@ -62,18 +58,15 @@ def detect_anomalies_isolation_forest(df, column):
     from sklearn.ensemble import IsolationForest
     model = IsolationForest(contamination=0.03, random_state=42)
     vals = df[[column]].fillna(df[column].mean())
-    preds = model.fit_predict(vals)
-    return preds == -1
+    return model.fit_predict(vals) == -1
 
 def estimate_revenue_gap(df, anomaly_mask):
     if 'revenue' not in df.columns:
         return 0.0
     normal_mean = df.loc[~anomaly_mask, 'revenue'].mean()
     anomalous_rev = df.loc[anomaly_mask, 'revenue']
-    gap = (normal_mean - anomalous_rev).clip(lower=0).sum()
-    return gap
+    return (normal_mean - anomalous_rev).clip(lower=0).sum()
 
-# Sidebar Executive Controls
 st.sidebar.title("🛡️ SentinelIQ Control Panel")
 st.sidebar.markdown("---")
 metric_col = st.sidebar.selectbox("Target Metric Analysis", 
@@ -81,15 +74,12 @@ metric_col = st.sidebar.selectbox("Target Metric Analysis",
 window_size = st.sidebar.slider("Rolling Window (Hours)", 12, 72, 24)
 threshold_val = st.sidebar.slider("Statistical MAD Sensitivity", 1.5, 5.0, 3.0)
 
-# Run Detectors
 df_metrics['stat_anomaly'] = detect_anomalies_statistical(df_metrics, column=metric_col, window=window_size, threshold=threshold_val)
 df_metrics['ml_anomaly'] = detect_anomalies_isolation_forest(df_metrics, column=metric_col)
 
-# Header Section
 st.title("🚨 SentinelIQ: Enterprise Operational Intelligence & Incident Suite")
-st.markdown("Real-time telemetry monitoring, dual-engine anomaly detection (Statistical + Machine Learning), and automated AI forensic post-mortems.")
+st.markdown("Real-time telemetry monitoring, dual-engine anomaly detection, and automated AI forensic post-mortems.")
 
-# Multi-Tab Enterprise Architecture
 tab1, tab2, tab3, tab4 = st.tabs([
     "📊 Executive Overview", 
     "🔬 Advanced Anomaly Lab", 
@@ -97,11 +87,9 @@ tab1, tab2, tab3, tab4 = st.tabs([
     "🧠 AI Forensic Post-Mortem"
 ])
 
-# ---------------- TAB 1: EXECUTIVE OVERVIEW ----------------
 with tab1:
     st.subheader("Executive KPI Summary")
     col1, col2, col3, col4 = st.columns(4)
-    
     total_hours = len(df_metrics)
     stat_count = int(df_metrics['stat_anomaly'].sum())
     ml_count = int(df_metrics['ml_anomaly'].sum())
@@ -120,39 +108,27 @@ with tab1:
                     mode='markers', marker=dict(color='#ff4b4b', size=9, symbol='diamond'), name='Detected Anomaly')
     st.plotly_chart(fig, use_container_width=True)
 
-# ---------------- TAB 2: ANOMALY LAB ----------------
 with tab2:
     st.subheader("Dual-Engine Anomaly Detection Comparison")
-    st.markdown("Compare rolling median MAD (Statistical) against scikit-learn Isolation Forest (Machine Learning).")
-    
     comparison_df = df_metrics[['timestamp', metric_col, 'stat_anomaly', 'ml_anomaly']].copy()
-    comparison_df['Agreement'] = comparison_df['stat_anomaly'] & comparison_df['ml_anomaly']
-    
     fig_comp = go.Figure()
     fig_comp.add_trace(go.Scatter(x=df_metrics['timestamp'], y=df_metrics[metric_col], name='Metric Value', line=dict(color='cyan')))
     stat_pts = df_metrics[df_metrics['stat_anomaly']]
     fig_comp.add_trace(go.Scatter(x=stat_pts['timestamp'], y=stat_pts[metric_col], mode='markers', name='Statistical Anomaly', marker=dict(color='red', size=8)))
-    
     fig_comp.update_layout(title="Statistical vs ML Anomaly Overlay", template="plotly_dark")
     st.plotly_chart(fig_comp, use_container_width=True)
-    
-    st.markdown("### Anomaly Detection Summary Table")
     st.dataframe(comparison_df[comparison_df['stat_anomaly'] | comparison_df['ml_anomaly']], use_container_width=True)
 
-# ---------------- TAB 3: INCIDENT CORRELATION ----------------
 with tab3:
     st.subheader("Operational Event & Incident Correlation")
     if not anomalies_df.empty and not df_events.empty:
-        st.warning(f"Correlating anomalies with recorded system events.")
+        st.warning("Correlating anomalies with recorded system events.")
         st.dataframe(df_events, use_container_width=True)
     else:
         st.info("No recorded deployment or infrastructure events within current telemetry.")
 
-# ---------------- TAB 4: AI FORENSIC POST-MORTEM ----------------
 with tab4:
     st.subheader("🧠 Automated AI Forensic Post-Mortem Report")
-    st.markdown("Generated based on live telemetry anomalies, rolling median deviations, and correlated deployment markers.")
-    
     report_markdown = f"""
     ### 📋 Incident Investigation Report
     * **Generated At:** {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}
@@ -162,15 +138,11 @@ with tab4:
     
     ---
     #### 🔍 Key Findings & Root Cause Analysis
-    1. **Deviation Spike:** Metric deviations crossed historical rolling median thresholds with a MAD sensitivity of `{threshold_val}`.
-    2. **Operational Correlation:** Temporal proximity verified against recent system deployment alerts and database telemetry.
-    3. **Actionable Recommendation:** Immediate review of deployment logs and rollback procedures during anomaly intervals is advised.
-    
-    > *Disclaimer: Timing proximity indicates high correlation, not definitive proven causation. Further developer verification is required.*
+    1. **Deviation Spike:** Metric deviations crossed historical rolling median thresholds.
+    2. **Operational Correlation:** Temporal proximity verified against recent system deployment alerts.
+    3. **Actionable Recommendation:** Immediate review of deployment logs and rollback procedures.
     """
-    
     st.markdown(report_markdown)
-    
     st.download_button(
         label="📥 Download Forensic Post-Mortem Report (Markdown)",
         data=report_markdown,
