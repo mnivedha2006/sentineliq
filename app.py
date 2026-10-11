@@ -244,4 +244,4 @@ with tab4:
 * Tune sensitivity thresholds or expand rolling windows if false positives persist.
 """
     st.markdown(report_text)
-    st.download_button("Download
+    st.download_button("Download Report (Markdown)", data=report_text, file_name="sentineliq_forensic_report.md", mime="text/markdown")
