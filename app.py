@@ -189,7 +189,22 @@ with tab1:
     st.plotly_chart(fig, use_container_width=True)
 
 with tab2:
-    st.subheader("Dual-Engine Anomaly Detection Comparison")
+    st.subheader("Dual-Engine Anomaly Detection & Model Agreement Matrix")
+    
+    # Evaluation Metrics Calculations
+    both_agree = int((df_metrics['stat_anomaly'] & df_metrics['ml_anomaly']).sum())
+    only_stat = int((df_metrics['stat_anomaly'] & ~df_metrics['ml_anomaly']).sum())
+    only_ml = int((~df_metrics['stat_anomaly'] & df_metrics['ml_anomaly']).sum())
+    total_flags_union = int((df_metrics['stat_anomaly'] | df_metrics['ml_anomaly']).sum())
+    
+    mcol1, mcol2, mcol3, mcol4 = st.columns(4)
+    mcol1.metric("Both Engines Agree", f"{both_agree}")
+    mcol2.metric("Statistical Only", f"{only_stat}")
+    mcol3.metric("ML (Isolation Forest) Only", f"{only_ml}")
+    agreement_ratio = round((both_agree / max(total_flags_union, 1)) * 100, 1)
+    mcol4.metric("Engine Overlap Ratio", f"{agreement_ratio}%")
+    
+    st.markdown("---")
     comparison_df = df_metrics[['timestamp', metric_col, 'stat_anomaly', 'ml_anomaly']].copy()
     fig_comp = go.Figure()
     fig_comp.add_trace(go.Scatter(x=df_metrics['timestamp'], y=df_metrics[metric_col], name='Metric Value', line=dict(color='#388bfd')))
